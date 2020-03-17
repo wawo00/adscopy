@@ -14,6 +14,7 @@ import static main.java.AndroidxMapping.*;
  */
 
 public class CopyHelper {
+    static boolean firstWhile = true;// 添加换行符
 
     public static void dirCopy(String srcPath, String destPath) {
         File src = new File(srcPath);
@@ -29,11 +30,9 @@ public class CopyHelper {
             if (s.isFile()) {
                 if (s.getPath().endsWith(".java")) {
                     javaFileCopy(s.getPath(), destPath + File.separator + s.getName());
-                }
-//                else if (s.getPath().endsWith("xml") ){
-//                    xmlFileCopy(s.getPath(), destPath + File.separator + s.getName()); // 因为修改的xml都会有个换行符，暂时不修改
-//                }
-                else{
+                } else if (s.getPath().endsWith("xml")) {
+                    xmlFileCopy(s.getPath(), destPath + File.separator + s.getName()); // 因为修改的xml都会有个换行符
+                } else {
                     originalFileCopy(s.getPath(), destPath + File.separator + s.getName());
                 }
 
@@ -60,9 +59,9 @@ public class CopyHelper {
             reader = new BufferedReader(inReader);
             writer = new BufferedWriter(outWriter);
             String lineStr = null;
-            while ((lineStr =reader.readLine())!= null) {
-                if (lineStr.startsWith("import")|| lineStr.contains(sup_vertical)) {
-                    lineStr= convertSupportClassToAndroidx(lineStr);
+            while ((lineStr = reader.readLine()) != null) {
+                if (lineStr.startsWith("import") || lineStr.contains(sup_vertical)) {
+                    lineStr = convertSupportClassToAndroidx(lineStr);
                 }
                 writer.write(lineStr + "\r\n");
             }
@@ -94,13 +93,19 @@ public class CopyHelper {
             reader = new BufferedReader(inReader);
             writer = new BufferedWriter(outWriter);
             String lineStr = null;
-            while ((lineStr =reader.readLine())!= null) {
+            while ((lineStr = reader.readLine()) != null) {
                 if (lineStr.contains("android.support")) {
-                    lineStr= convertSupportClassToAndroidx(lineStr);
+                    lineStr = convertSupportClassToAndroidx(lineStr);
                     writer.write(lineStr + "\r\n");
                 }
-                writer.write(lineStr+"\n");
+                if (firstWhile) {
+                    writer.write(lineStr);
+                    firstWhile=false;
+                }else{
+                    writer.write("\n"+lineStr);
+                }
             }
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -167,30 +172,30 @@ public class CopyHelper {
     }
 
     private static String convertSupportClassToAndroidx(String line) {
-        String destLine="";
+        String destLine = "";
         if (line.contains(AndroidxMapping.Support_Prex) || line.contains(sup_vertical)) {
             if (line.contains(sup_NonNull)) {
-                destLine=line.replace(sup_NonNull, ax_NonNull);
+                destLine = line.replace(sup_NonNull, ax_NonNull);
             } else if (line.contains(sup_LinearLayoutManager)) {
-                destLine=line.replace(sup_LinearLayoutManager, ax_LinearLayoutManager);
+                destLine = line.replace(sup_LinearLayoutManager, ax_LinearLayoutManager);
             } else if (line.contains(sup_OrientationHelper)) {
-                destLine=line.replace(sup_OrientationHelper, ax_OrientationHelper);
+                destLine = line.replace(sup_OrientationHelper, ax_OrientationHelper);
             } else if (line.contains(sup_RecyclerView)) {
-                destLine=line.replace(sup_RecyclerView, ax_RecyclerView);
+                destLine = line.replace(sup_RecyclerView, ax_RecyclerView);
             } else if (line.contains(sup_Fragment)) {
-                destLine=line.replace(sup_Fragment, ax_Fragment);
+                destLine = line.replace(sup_Fragment, ax_Fragment);
             } else if (line.contains(sup_vertical)) {
-                destLine=line.replace(sup_vertical, ax_vertical);
+                destLine = line.replace(sup_vertical, ax_vertical);
             } else if (line.contains(sup_FragmentActivity)) {
-                destLine=line.replace(sup_FragmentActivity, ax_FragmentActivity);
+                destLine = line.replace(sup_FragmentActivity, ax_FragmentActivity);
             } else if (line.contains(sup_FragmentManager)) {
-                destLine=line.replace(sup_FragmentManager, ax_FragmentManager);
+                destLine = line.replace(sup_FragmentManager, ax_FragmentManager);
             } else if (line.contains(sup_FragmentTransactionl)) {
-                destLine=line.replace(sup_FragmentTransactionl, ax_FragmentTransactionl);
+                destLine = line.replace(sup_FragmentTransactionl, ax_FragmentTransactionl);
             } else if (line.contains(sup_ContextCompat)) {
-                destLine=line.replace(sup_ContextCompat, ax_ContextCompat);
+                destLine = line.replace(sup_ContextCompat, ax_ContextCompat);
             } else if (line.contains(sup_vertical)) {
-                destLine=line.replace(sup_vertical, ax_vertical);
+                destLine = line.replace(sup_vertical, ax_vertical);
             }
             return destLine;
         } else {
